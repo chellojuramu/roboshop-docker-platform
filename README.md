@@ -190,7 +190,8 @@ http://localhost:15672
 
 ---
 
-<img width="3018" height="1646" alt="image" src="https://github.com/user-attachments/assets/410456e8-1f22-461a-8522-c69a62dfccd1" />
+<img width="2956" height="1484" alt="image" src="https://github.com/user-attachments/assets/34e48996-e39a-456b-82c3-b4dcd2dbdc1e" />
+
 
 
 <img width="3024" height="1642" alt="image" src="https://github.com/user-attachments/assets/5b520b6f-1a54-4e7b-945f-1873074d6ee3" />
