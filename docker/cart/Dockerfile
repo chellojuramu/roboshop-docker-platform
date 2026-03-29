@@ -4,10 +4,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy dependency files first (for caching)
-COPY package.json package-lock.json ./
+COPY package.json ./
 
 # Install only production dependencies
-RUN npm ci --omit=dev
+RUN npm install
 
 # Copy application code
 COPY . .
