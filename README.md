@@ -135,7 +135,11 @@ docker build -t roboshop/redis ./docker/redis
 ```bash
 # Databases
 docker run -d --name mongodb --network roboshop roboshop/mongodb
-docker run -d --name mysql --network roboshop roboshop/mysql
+docker run -d \
+  --name mysql \
+  --network roboshop \
+  -e MYSQL_ROOT_PASSWORD=RoboShop@1 \
+  roboshop/mysql
 docker run -d --name redis --network roboshop roboshop/redis
 docker run -d --name rabbitmq --network roboshop -p 15672:15672 roboshop/rabbitmq
 
@@ -186,15 +190,11 @@ http://localhost:15672
 
 ---
 
-## 🧠 Interview Highlights
+<img width="3018" height="1646" alt="image" src="https://github.com/user-attachments/assets/410456e8-1f22-461a-8522-c69a62dfccd1" />
 
-This project demonstrates:
 
-- Real-world microservices architecture
-- Docker multi-stage builds
-- Image optimization techniques
-- Secure container practices
-- Service orchestration fundamentals
+<img width="3024" height="1642" alt="image" src="https://github.com/user-attachments/assets/5b520b6f-1a54-4e7b-945f-1873074d6ee3" />
+
 
 ---
 
