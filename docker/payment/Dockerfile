@@ -1,38 +1,29 @@
-# ---------- Stage 1: Build ----------
+# ---------- Stage 1 ----------
 FROM python:3.9-alpine AS builder
 
 WORKDIR /build
 
-# Install build dependencies
-RUN apk add --no-cache \
-    build-base \
-    linux-headers \
-    pcre-dev
+RUN apk add --no-cache build-base linux-headers pcre-dev
 
-# Copy dependency file first (for caching)
 COPY requirements.txt .
-
-# Install dependencies into custom location
 RUN pip install --prefix=/install -r requirements.txt
 
+COPY . .
 
-# ---------- Stage 2: Runtime ----------
-FROM gcr.io/distroless/python3-debian12
+# ---------- Stage 2 ----------
+FROM python:3.9-alpine
 
 WORKDIR /app
 
-# Metadata
-LABEL project="roboshop" \
-      service="payment" \
-      owner="ramu"
+# Install runtime dependency
+RUN apk add --no-cache pcre
 
-# Copy installed dependencies
+# Copy dependencies
 COPY --from=builder /install /usr/local
 
-# Copy application code
+# Copy app
 COPY payment.ini *.py ./
 
-# Environment variables
 ENV CART_HOST="cart" \
     CART_PORT="8080" \
     USER_HOST="user" \
@@ -41,8 +32,6 @@ ENV CART_HOST="cart" \
     AMQP_USER="roboshop" \
     AMQP_PASS="roboshop123"
 
-# Internal port
 EXPOSE 8080
 
-# Run application
 CMD ["uwsgi", "--ini", "payment.ini"]
