@@ -1,210 +1,143 @@
 # 🚀 Roboshop Docker Platform
 
-A production-grade microservices deployment of the Roboshop application using Docker, showcasing end-to-end DevOps practices including containerization, multi-stage builds, distroless images, and service-to-service communication.
+A production-style microservices deployment of the Roboshop application using Docker and Docker Compose.
+This project demonstrates containerization, service orchestration, and real-world DevOps practices.
 
 ---
 
-## 🧠 Project Overview
-
-Roboshop is a microservices-based e-commerce application consisting of multiple services such as frontend, catalogue, cart, user, shipping, payment, and supporting components like databases, cache, and message queues.
-
-This project demonstrates how to:
-
-- Containerize multiple services
-- Use Docker networking for communication
-- Optimize images using multi-stage builds
-- Improve security using distroless images
-- Structure a real-world DevOps project
-
----
-
-## 🏗️ Architecture
+## 🧠 Architecture Overview
 
 ```
-Frontend (nginx)
+Frontend (Nginx)
         ↓
------------------------------------------
-|        Backend Services               |
-|--------------------------------------|
-| User        → MongoDB               |
-| Catalogue   → MongoDB               |
-| Cart        → Redis                 |
-| Shipping    → MySQL                 |
-| Payment     → RabbitMQ              |
------------------------------------------
+Backend Services (NodeJS / Java / Python)
+        ↓
+Databases & Messaging
 ```
 
----
-
-## 🧰 Tech Stack
-
-### 🚀 Core Technologies
-- Docker
-- Docker Networking
-
-### ☁️ Backend Services
-- Node.js (Catalogue, Cart, User)
-- Java (Shipping)
-- Python (Payment)
-
-### 🗄️ Databases & Messaging
-- MongoDB
-- MySQL
-- Redis
-- RabbitMQ
-
-### 🌐 Frontend
-- Nginx
+- MongoDB (Catalogue, User)
+- MySQL (Shipping)
+- Redis (Cart cache)
+- RabbitMQ (Async messaging)
 
 ---
 
-## 📁 Project Structure
+## 🧱 Services
 
-```
-roboshop-docker-platform/
-│
-├── docker/
-│   ├── frontend/
-│   ├── catalogue/
-│   ├── cart/
-│   ├── user/
-│   ├── shipping/
-│   ├── payment/
-│   ├── mongodb/
-│   ├── mysql/
-│   ├── redis/
-│   └── rabbitmq/
-│
-├── docs/
-└── README.md
-```
+### 🔹 Frontend
+- Nginx-based reverse proxy
+- Exposes application on port 80
+
+### 🔹 Backend Services
+- Catalogue (NodeJS + MongoDB)
+- User (NodeJS + MongoDB + Redis)
+- Cart (NodeJS + Redis)
+- Shipping (Java + MySQL)
+- Payment (Python + RabbitMQ)
+
+### 🔹 Infrastructure
+- MongoDB (persistent)
+- MySQL (persistent)
+- Redis (cache)
+- RabbitMQ (message broker)
 
 ---
 
-## 🔥 Key Features
+## 🐳 Docker Strategy
 
-- ✅ Multi-stage Docker builds
-- ✅ Distroless images for enhanced security
-- ✅ Lightweight alpine-based images
-- ✅ Service-to-service communication via Docker network
-- ✅ Database initialization using entrypoint scripts
-- ✅ Clean and modular project structure
-- ✅ Production-ready best practices
+- Multi-stage builds used for optimized images
+- Distroless images used for NodeJS services (security & size)
+- Alpine-based images for lightweight containers
+- Non-root users used for better security
 
 ---
 
-## 🐳 Docker Concepts Used
+## 📦 Image Registry
 
-- `FROM` → base images
-- `WORKDIR` → container working directory
-- `COPY` → file transfer
-- `RUN` → build-time commands
-- `ENV` → configuration variables
-- `CMD` → runtime execution
-- Multi-stage builds
-- Distroless images
-- Docker networking
-
----
-
-## 🚀 How to Run the Project
-
-### 🔹 1. Create Docker Network
+All images are pushed to Docker Hub:
 
 ```bash
-docker network create roboshop
-```
-
-### 🔹 2. Build Images
-
-```bash
-docker build -t roboshop/mongodb ./docker/mongodb
-docker build -t roboshop/catalogue ./docker/catalogue
-docker build -t roboshop/cart ./docker/cart
-docker build -t roboshop/user ./docker/user
-docker build -t roboshop/frontend ./docker/frontend
-docker build -t roboshop/mysql ./docker/mysql
-docker build -t roboshop/shipping ./docker/shipping
-docker build -t roboshop/payment ./docker/payment
-docker build -t roboshop/rabbitmq ./docker/rabbitmq
-docker build -t roboshop/redis ./docker/redis
-```
-
-### 🔹 3. Run Services (Order Matters 🔥)
-
-```bash
-# Databases
-docker run -d --name mongodb --network roboshop roboshop/mongodb
-docker run -d --name mysql --network roboshop roboshop/mysql
-docker run -d --name redis --network roboshop roboshop/redis
-docker run -d --name rabbitmq --network roboshop -p 15672:15672 roboshop/rabbitmq
-
-# Backend services
-docker run -d --name catalogue --network roboshop roboshop/catalogue
-docker run -d --name user --network roboshop roboshop/user
-docker run -d --name cart --network roboshop roboshop/cart
-docker run -d --name shipping --network roboshop roboshop/shipping
-docker run -d --name payment --network roboshop roboshop/payment
-
-# Frontend (only exposed service)
-docker run -d --name frontend --network roboshop -p 80:80 roboshop/frontend
+docker pull chelloju/roboshop-frontend:1.0
+docker pull chelloju/roboshop-cart:1.0
+docker pull chelloju/roboshop-user:1.0
+docker pull chelloju/roboshop-catalogue:1.0
+docker pull chelloju/roboshop-shipping:1.0
+docker pull chelloju/roboshop-payment:1.0
+docker pull chelloju/roboshop-mysql:1.0
+docker pull chelloju/roboshop-mongodb:1.0
 ```
 
 ---
 
-## 🌐 Access Application
+## ⚙️ Run the Application
 
-👉 Open in browser:
+### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/chellojuramu/roboshop-docker-platform.git
+cd roboshop-docker-platform
+```
+
+### 2️⃣ Start Services
+
+```bash
+docker compose up -d
+```
+
+### 3️⃣ Access Application
+
 ```
 http://localhost
 ```
 
-👉 RabbitMQ UI:
+### 4️⃣ RabbitMQ UI
+
 ```
 http://localhost:15672
 ```
 
----
-
-## 🔐 Security Best Practices
-
-- Use distroless images for runtime
-- Avoid running containers as root
-- Use environment variables for configuration
-- Do not expose internal services
-- Use Docker network for isolation
+| Field    | Value       |
+|----------|-------------|
+| Username | roboshop    |
+| Password | roboshop123 |
 
 ---
 
-## ⚡ Important Learnings
+## 💾 Data Persistence
 
-- Difference between build-time vs runtime
-- Why distroless improves security
-- How microservices communicate via service names
-- Why only frontend is exposed
-- How databases are initialized automatically
-
----
-
-## 🧠 Interview Highlights
-
-This project demonstrates:
-
-- Real-world microservices architecture
-- Docker multi-stage builds
-- Image optimization techniques
-- Secure container practices
-- Service orchestration fundamentals
+| Service | Volume Used   |
+|---------|---------------|
+| MySQL   | ✅ Yes        |
+| MongoDB | ✅ Yes        |
+| Redis   | ❌ No (cache) |
 
 ---
 
-## 🚀 Future Enhancements
+## 🔐 Security Practices
 
-- Docker Compose integration
-- Kubernetes (EKS) deployment
-- CI/CD pipelines (GitHub Actions / Jenkins)
-- Monitoring (Prometheus + Grafana)
-- Secrets management
+- Avoided root user inside containers
+- Used minimal base images (Alpine / Distroless)
+- No hardcoded secrets in production (recommended to use `.env`)
+
+---
+
+## 🧠 Key Learnings
+
+- Docker image optimization
+- Multi-service orchestration using Docker Compose
+- Service-to-service communication via DNS
+- Async communication using RabbitMQ
+- Stateful vs Stateless containers
+- Production vs Development Docker workflows
+
+---
+
+## 🚀 Future Improvements
+
+- Add health checks
+- Use `.env` for secrets
+- CI/CD pipeline (GitHub Actions / Jenkins)
+- Kubernetes deployment (EKS)
 
 ---
 
