@@ -49,6 +49,23 @@ Databases & Messaging
 - Distroless images used for NodeJS services (security & size)
 - Alpine-based images for lightweight containers
 - Non-root users used for better security
+- Multi-architecture images built using Docker Buildx (ARM64 + AMD64 support)
+## 🏗️ Multi-Architecture Build (Docker Buildx)
+
+This project supports both ARM64 (Mac M1/M2) and AMD64 (cloud/EC2) architectures.
+
+### Why Buildx?
+
+Local development was done on Apple Silicon (ARM64), while deployment targets (EC2) use AMD64 architecture. To ensure compatibility across environments, Docker Buildx was used to create multi-platform images.
+
+### Build Command
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t chelloju/roboshop-cart:1.0 \
+  ./docker/cart \
+  --push
 
 ---
 
