@@ -1,11 +1,17 @@
 # 🚀 Roboshop Docker Platform
 
-A production-style microservices deployment of the Roboshop application using Docker and Docker Compose.
-This project demonstrates containerization, service orchestration, and real-world DevOps practices.
+A **production-style microservices deployment** of the Roboshop application using Docker and Docker Compose.
+
+This project demonstrates:
+
+* Containerization of multi-language services
+* Service orchestration using Docker Compose
+* Multi-architecture builds using Docker Buildx
+* Real-world DevOps practices (networking, volumes, debugging, optimization)
 
 ---
 
-## 🧠 Architecture Overview
+# 🧠 Architecture Overview
 
 ```
 Frontend (Nginx)
@@ -15,150 +21,179 @@ Backend Services (NodeJS / Java / Python)
 Databases & Messaging
 ```
 
-- MongoDB (Catalogue, User)
-- MySQL (Shipping)
-- Redis (Cart cache)
-- RabbitMQ (Async messaging)
+### 🔗 Flow
+
+* Frontend → Routes requests to backend services
+* Backend → Handles business logic
+* Databases → Store persistent data
+* Messaging → Async communication
 
 ---
 
-## 🧱 Services
+# 🧱 Services
+
+## 🔹 Frontend
+
+* Nginx-based reverse proxy
+* Exposes application on port `80`
+
+---
+
+## 🔹 Backend Services
+
+| Service   | Tech Stack | Dependencies   |
+| --------- | ---------- | -------------- |
+| Catalogue | NodeJS     | MongoDB        |
+| User      | NodeJS     | MongoDB, Redis |
+| Cart      | NodeJS     | Redis          |
+| Shipping  | Java       | MySQL          |
+| Payment   | Python     | RabbitMQ       |
+
+---
+
+## 🔹 Infrastructure Services
+
+| Service  | Purpose                    |
+| -------- | -------------------------- |
+| MongoDB  | NoSQL DB (Catalogue, User) |
+| MySQL    | Relational DB (Shipping)   |
+| Redis    | Cache (Cart, User)         |
+| RabbitMQ | Message Queue (Payment)    |
+
+---
+
+# 🐳 Docker Strategy
+
+This project follows production-level container practices:
+
+* ✅ Multi-stage builds for optimized images
+* ✅ Distroless images (NodeJS services)
+* ✅ Alpine-based images for lightweight containers
+* ✅ Non-root users for security
+* ✅ `.dockerignore` to reduce build context
+* ✅ Multi-architecture images (ARM64 + AMD64)
+
+---
+
+# 🏗️ Multi-Architecture Build (Docker Buildx)
+
+## 🧠 Problem
+
+* Local system → **Mac (ARM64)**
+* Cloud (EC2) → **AMD64**
+
+👉 Caused error:
+
+```
+no matching manifest for linux/amd64
+```
+
+---
+
+## ✅ Solution
+
+Used Docker Buildx to build multi-platform images.
+
+---
+
+## 🔧 Build Commands
+
+### 🔹 Cart
+
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-cart:1.0
+./cart
+--push
+
+---
+
+### 🔹 User
+
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-user:1.0
+./user
+--push
+
+---
+
+### 🔹 Catalogue
+
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-catalogue:1.0
+./catalogue
+--push
+
+---
+
+### 🔹 Shipping
+
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-shipping:1.0
+./shipping
+--push
+
+---
+
+### 🔹 Payment
+
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-payment:1.0
+./payment
+--push
+
+---
 
 ### 🔹 Frontend
-- Nginx-based reverse proxy
-- Exposes application on port 80
 
-### 🔹 Backend Services
-- Catalogue (NodeJS + MongoDB)
-- User (NodeJS + MongoDB + Redis)
-- Cart (NodeJS + Redis)
-- Shipping (Java + MySQL)
-- Payment (Python + RabbitMQ)
-
-### 🔹 Infrastructure
-- MongoDB (persistent)
-- MySQL (persistent)
-- Redis (cache)
-- RabbitMQ (message broker)
-
----
-
-## 🐳 Docker Strategy
-
-- Multi-stage builds used for optimized images
-- Distroless images used for NodeJS services (security & size)
-- Alpine-based images for lightweight containers
-- Non-root users used for better security
-- Multi-architecture images built using Docker Buildx (ARM64 + AMD64 support)
-## 🏗️ Multi-Architecture Build (Docker Buildx)
-
-This project supports both ARM64 (Mac M1/M2) and AMD64 (cloud/EC2) architectures.
-
-### Why Buildx?
-
-Local development was done on Apple Silicon (ARM64), while deployment targets (EC2) use AMD64 architecture. To ensure compatibility across environments, Docker Buildx was used to create multi-platform images.
-
-### Build Command
-
-```bash
-
-### 🔹 Cart Service
-
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-cart:1.0 
-./docker/cart 
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-frontend:1.0
+./frontend
 --push
 
 ---
 
-### 🔹 User Service
+### 🔹 MySQL
 
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-user:1.0 
-./docker/user 
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-mysql:1.0
+./mysql
 --push
 
 ---
 
-### 🔹 Catalogue Service
+### 🔹 MongoDB
 
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-catalogue:1.0 
-./docker/catalogue 
+docker buildx build
+--platform linux/amd64,linux/arm64
+-t chelloju/roboshop-mongodb:1.0
+./mongodb
 --push
 
 ---
 
-### 🔹 Shipping Service
+## ⚠️ Note
 
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-shipping:1.0 
-./docker/shipping 
---push
+All images support:
 
----
+* ARM64 → Local (Mac)
+* AMD64 → Cloud (EC2)
 
-### 🔹 Payment Service
-
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-payment:1.0 
-./docker/payment 
---push
+👉 Build once → Run anywhere
 
 ---
 
-### 🔹 Frontend Service
+# 📦 Image Registry
 
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-frontend:1.0 
-./docker/frontend 
---push
+All images are hosted on Docker Hub:
 
----
-
-### 🔹 MySQL Service
-
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-mysql:1.0 
-./docker/mysql 
---push
-
----
-
-### 🔹 MongoDB Service
-
-docker buildx build 
---platform linux/amd64,linux/arm64 
--t chelloju/roboshop-mongodb:1.0 
-./docker/mongodb 
---push
-
----
-
-### ⚠️ Note
-
-All images are built using Docker Buildx to support both:
-
-* ARM64 → Local development (Mac)
-* AMD64 → Cloud deployment (EC2)
-
-This ensures the images run consistently across different architectures without compatibility issues.
-
-
----
-
-## 📦 Image Registry
-
-All images are pushed to Docker Hub:
-
-```bash
+```
 docker pull chelloju/roboshop-frontend:1.0
 docker pull chelloju/roboshop-cart:1.0
 docker pull chelloju/roboshop-user:1.0
@@ -171,83 +206,120 @@ docker pull chelloju/roboshop-mongodb:1.0
 
 ---
 
-## ⚙️ Run the Application
+# ⚙️ Running the Application
 
-### 1️⃣ Clone Repository
+## 1️⃣ Clone Repository
 
-```bash
+```
 git clone https://github.com/chellojuramu/roboshop-docker-platform.git
 cd roboshop-docker-platform
 ```
 
-### 2️⃣ Start Services
+---
 
-```bash
+## 2️⃣ Create Environment File
+
+```
+touch .env
+```
+
+Add:
+
+```
+MYSQL_ROOT_PASSWORD=RoboShop@1
+RABBITMQ_DEFAULT_USER=roboshop
+RABBITMQ_DEFAULT_PASS=roboshop123
+```
+
+---
+
+## 3️⃣ Start Services
+
+```
 docker compose up -d
 ```
 
-### 3️⃣ Access Application
+---
+
+## 4️⃣ Access Application
 
 ```
 http://localhost
 ```
 
-### 4️⃣ RabbitMQ UI
+---
+
+## 5️⃣ RabbitMQ UI
 
 ```
 http://localhost:15672
 ```
 
 | Field    | Value       |
-|----------|-------------|
+| -------- | ----------- |
 | Username | roboshop    |
 | Password | roboshop123 |
 
 ---
 
-## 💾 Data Persistence
+# 💾 Data Persistence
 
-| Service | Volume Used   |
-|---------|---------------|
-| MySQL   | ✅ Yes        |
-| MongoDB | ✅ Yes        |
-| Redis   | ❌ No (cache) |
-
----
-
-## 🔐 Security Practices
-
-- Avoided root user inside containers
-- Used minimal base images (Alpine / Distroless)
-- No hardcoded secrets in production (recommended to use `.env`)
+| Service | Volume       |
+| ------- | ------------ |
+| MySQL   | ✅ Persistent |
+| MongoDB | ✅ Persistent |
+| Redis   | ❌ Cache only |
 
 ---
 
-## 🧠 Key Learnings
+# 🔐 Security Practices
 
-- Docker image optimization
-- Multi-service orchestration using Docker Compose
-- Service-to-service communication via DNS
-- Async communication using RabbitMQ
-- Stateful vs Stateless containers
-- Production vs Development Docker workflows
+* No hardcoded secrets (used `.env`)
+* Non-root containers
+* Minimal base images (Alpine / Distroless)
+* Reduced attack surface
 
 ---
 
-## 🚀 Future Improvements
+# 🧠 Key Concepts Covered
 
-- Add health checks
-- Use `.env` for secrets
-- CI/CD pipeline (GitHub Actions / Jenkins)
-- Kubernetes deployment (EKS)
+* Dockerfile (FROM, RUN, COPY, ENV, CMD, ENTRYPOINT)
+* Multi-stage builds
+* Docker networking (service discovery via DNS)
+* Docker volumes (stateful vs stateless)
+* Docker Compose (multi-service orchestration)
+* Image registry (Docker Hub)
+* Multi-architecture builds (Buildx)
+* Debugging real-world issues:
+
+    * Architecture mismatch
+    * Disk space (`/var` issue)
 
 ---
 
-## 👨‍💻 Author
+# 🧠 Key Learnings
 
-**Ramu Chelloju**  
+* Difference between dev vs prod container strategy
+* Importance of platform compatibility
+* Docker storage management
+* Service dependency handling
+* Microservices communication
+
+---
+
+# 🚀 Future Improvements
+
+* Add health checks (service readiness)
+* Integrate Trivy (security scanning)
+* CI/CD pipeline (GitHub Actions / Jenkins)
+* Kubernetes deployment (EKS)
+* Secrets management (Vault / AWS Secrets Manager)
+
+---
+
+# 👨‍💻 Author
+
+**Ramu Chelloju**
 DevOps & Cloud Enthusiast
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/ramuchelloju/)
-
-> 📌 Follow me on LinkedIn: [linkedin.com/in/ramuchelloju](https://www.linkedin.com/in/ramuchelloju/)
+🔗 https://www.linkedin.com/in/ramuchelloju/
