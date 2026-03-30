@@ -61,11 +61,96 @@ Local development was done on Apple Silicon (ARM64), while deployment targets (E
 ### Build Command
 
 ```bash
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t chelloju/roboshop-cart:1.0 \
-  ./docker/cart \
-  --push
+
+### 🔹 Cart Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-cart:1.0 
+./docker/cart 
+--push
+
+---
+
+### 🔹 User Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-user:1.0 
+./docker/user 
+--push
+
+---
+
+### 🔹 Catalogue Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-catalogue:1.0 
+./docker/catalogue 
+--push
+
+---
+
+### 🔹 Shipping Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-shipping:1.0 
+./docker/shipping 
+--push
+
+---
+
+### 🔹 Payment Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-payment:1.0 
+./docker/payment 
+--push
+
+---
+
+### 🔹 Frontend Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-frontend:1.0 
+./docker/frontend 
+--push
+
+---
+
+### 🔹 MySQL Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-mysql:1.0 
+./docker/mysql 
+--push
+
+---
+
+### 🔹 MongoDB Service
+
+docker buildx build 
+--platform linux/amd64,linux/arm64 
+-t chelloju/roboshop-mongodb:1.0 
+./docker/mongodb 
+--push
+
+---
+
+### ⚠️ Note
+
+All images are built using Docker Buildx to support both:
+
+* ARM64 → Local development (Mac)
+* AMD64 → Cloud deployment (EC2)
+
+This ensures the images run consistently across different architectures without compatibility issues.
+
 
 ---
 
