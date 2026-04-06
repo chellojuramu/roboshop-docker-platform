@@ -1,16 +1,15 @@
 # ---------- Stage 1: Build ----------
-FROM node:20-alpine AS builder
+FROM node:20.20.2-alpine3.23 AS builder
 
 WORKDIR /app
 
 # Copy dependency files first (for caching)
 COPY package.json ./
 
+COPY *.js ./
+
 # Install only production dependencies
 RUN npm install
-
-# Copy application code
-COPY . .
 
 # ---------- Stage 2: Runtime ----------
 FROM gcr.io/distroless/nodejs20-debian13:nonroot
@@ -22,16 +21,14 @@ LABEL project="roboshop" \
       service="cart" \
       owner="ramu"
 
-# Copy built app from builder
-COPY --from=builder /app /app
-
-# Environment variables for service communication
-ENV REDIS_HOST="redis" \
-    CATALOGUE_HOST="catalogue" \
-    CATALOGUE_PORT="8080"
-
 # Document port (internal service)
 EXPOSE 8080
 
+# Copy built app from builder
+COPY --from=builder /app /app
+
+# ENV variables removed — handled by Kubernetes ConfigMap
+
 # Run application
+ENTRYPOINT ["node"]
 CMD ["server.js"]
