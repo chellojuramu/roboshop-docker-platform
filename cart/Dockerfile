@@ -30,5 +30,5 @@ COPY --from=builder /app /app
 # ENV variables removed — handled by Kubernetes ConfigMap
 
 # Run application
-ENTRYPOINT ["node"]
+
 CMD ["server.js"]

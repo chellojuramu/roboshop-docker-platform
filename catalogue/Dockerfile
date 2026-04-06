@@ -22,5 +22,5 @@ COPY --from=builder /app /app
 
 # ENV removed — handled by Kubernetes ConfigMap
 
-ENTRYPOINT ["node"]
+
 CMD ["server.js"]

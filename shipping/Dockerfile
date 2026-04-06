@@ -24,5 +24,5 @@ EXPOSE 8080
 
 COPY --from=builder /app/shipping.jar /app/shipping.jar
 
-ENTRYPOINT ["java", "-jar"]
+
 CMD ["shipping.jar"]

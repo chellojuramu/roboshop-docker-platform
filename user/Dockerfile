@@ -21,5 +21,5 @@ EXPOSE 8080
 COPY --from=builder /app /app
 
 
-ENTRYPOINT ["node"]
+
 CMD ["server.js"]
