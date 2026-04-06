@@ -1,27 +1,26 @@
 # ---------- Stage 1 ----------
-FROM node:20-alpine AS builder
+FROM node:20.20.2-alpine3.23 AS builder
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json .
+COPY *.js .
 RUN npm install
-
-COPY . .
 
 # ---------- Stage 2 ----------
 FROM gcr.io/distroless/nodejs20-debian13:nonroot
 
 WORKDIR /app
 
-COPY --from=builder /app /app
-
 LABEL project="roboshop" \
       service="catalogue" \
       owner="ramu"
 
-ENV MONGO="true" \
-    MONGO_URL="mongodb://mongodb:27017/catalogue"
-
 EXPOSE 8080
 
+COPY --from=builder /app /app
+
+# ENV removed — handled by Kubernetes ConfigMap
+
+ENTRYPOINT ["node"]
 CMD ["server.js"]
