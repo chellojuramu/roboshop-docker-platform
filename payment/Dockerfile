@@ -1,37 +1,35 @@
 # ---------- Stage 1 ----------
-FROM python:3.9-alpine AS builder
+FROM python:3.9.25-alpine3.22 AS builder
 
-WORKDIR /build
+WORKDIR /app
 
 RUN apk add --no-cache build-base linux-headers pcre-dev
 
 COPY requirements.txt .
-RUN pip install --prefix=/install -r requirements.txt
-
-COPY . .
+RUN pip3.9 install --prefix=/install -r requirements.txt
 
 # ---------- Stage 2 ----------
-FROM python:3.9-alpine
+FROM python:3.9.25-alpine3.22
 
 WORKDIR /app
 
-# Install runtime dependency
-RUN apk add --no-cache pcre
-
-# Copy dependencies
-COPY --from=builder /install /usr/local
-
-# Copy app
-COPY payment.ini *.py ./
-
-ENV CART_HOST="cart" \
-    CART_PORT="8080" \
-    USER_HOST="user" \
-    USER_PORT="8080" \
-    AMQP_HOST="rabbitmq" \
-    AMQP_USER="roboshop" \
-    AMQP_PASS="roboshop123"
+LABEL project="roboshop" \
+      service="payment" \
+      owner="ramu"
 
 EXPOSE 8080
+
+RUN apk add --no-cache pcre
+
+RUN addgroup -S roboshop && adduser -S roboshop -G roboshop && \
+    chown -R roboshop:roboshop /app
+
+COPY --from=builder /install /usr/local
+
+COPY --chown=roboshop:roboshop payment.ini *.py requirements.txt .
+
+# ENV removed — handled by Kubernetes ConfigMap
+
+USER roboshop
 
 CMD ["uwsgi", "--ini", "payment.ini"]
