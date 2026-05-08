@@ -1,0 +1,50 @@
+name: Build and Push to ACR
+
+on:
+    push:
+        branches:
+            - main
+
+env:
+    REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+    ACR_NAME: roboshoprc
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                service:
+                    - frontend
+                    - cart
+                    - payment
+                    - user
+                    - catalogue
+                    - shipping
+
+        steps:
+            # Step 1: Download the code from GitHub
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            # Step 2: Login to Azure Container Registry
+            - name: Login to ACR
+              uses: azure/docker-login@v1
+              with:
+                  login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+                  username: ${{ secrets.AZURE_CLIENT_ID }}
+                  password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+            # Step 3: Build Docker image for this service
+            - name: Build Docker image for ${{ matrix.service }}
+              run: |
+                  docker build \
+                    -t ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }} \
+                    -t ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:latest \
+                    ./${{ matrix.service }}/
+
+            # Step 4: Push image to ACR
+            - name: Push image to ACR
+              run: |
+                  docker push ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}
+                  docker push ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:latest
