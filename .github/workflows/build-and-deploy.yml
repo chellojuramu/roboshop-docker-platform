@@ -28,11 +28,9 @@ jobs:
                     - rabbitmq
 
         steps:
-            # Step 1: Checkout code
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
-            # Step 2: Login to ACR
             - name: Login to ACR
               uses: azure/docker-login@v1
               with:
@@ -40,7 +38,6 @@ jobs:
                   username: ${{ secrets.AZURE_CLIENT_ID }}
                   password: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-            # Step 3: Build Docker image
             - name: Build Docker image for ${{ matrix.service }}
               run: |
                   docker build \
@@ -48,7 +45,6 @@ jobs:
                     -t ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:latest \
                     ./${{ matrix.service }}/
 
-            # Step 4: Trivy Scan - OS Vulnerabilities
             - name: Trivy Scan - OS Vulnerabilities
               run: |
                   echo "🔍 Scanning ${{ matrix.service }} for OS vulnerabilities..."
@@ -62,7 +58,6 @@ jobs:
                     ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}
                   cat trivy-os-${{ matrix.service }}.txt
 
-            # Step 5: Trivy Scan - App Dependencies
             - name: Trivy Scan - App Dependencies
               run: |
                   echo "🔍 Scanning ${{ matrix.service }} for dependency vulnerabilities..."
@@ -76,7 +71,6 @@ jobs:
                     ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}
                   cat trivy-app-${{ matrix.service }}.txt
 
-            # Step 6: Trivy Scan - Secrets Detection
             - name: Trivy Scan - Secrets Detection
               run: |
                   echo "🔐 Scanning ${{ matrix.service }} for exposed secrets..."
@@ -89,7 +83,6 @@ jobs:
                     ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}
                   cat trivy-secrets-${{ matrix.service }}.txt
 
-            # Step 7: Trivy Critical Check (FAILS if CRITICAL found)
             - name: Trivy Scan - Critical Check
               run: |
                   echo "🚨 Checking for CRITICAL vulnerabilities..."
@@ -102,27 +95,24 @@ jobs:
                     echo "❌ CRITICAL vulnerabilities found"
                     exit 1
                   }
-                  echo "✅ No CRITICAL vulnerabilities"
+                  echo "✅ No CRITICAL vulnerabilities found"
 
-            # Step 8: Upload Reports
             - name: Upload Trivy Reports
               if: always()
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: trivy-reports-${{ matrix.service }}
                   path: trivy-*.txt
                   retention-days: 30
 
-            # Step 9: Push image to ACR
             - name: Push image to ACR
               run: |
                   docker push ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}
                   docker push ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:latest
                   echo "✅ Pushed: ${{ env.REGISTRY }}/${{ env.ACR_NAME }}-${{ matrix.service }}:${{ github.sha }}"
 
-            # Step 10: Cleanup
             - name: Cleanup
               if: always()
               run: |
-                  docker logout ${{ env.REGISTRY }}
+                  docker logout ${{ env.REGISTRY }} || true
                   rm -f trivy-*.txt
